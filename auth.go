@@ -5,6 +5,7 @@ import (
 	//"io/ioutil"
 	"crypto/md5"
 	"crypto/rand"
+	"crypto/tls"
 	"encoding/base64"
 	"io"
 	"log"
@@ -81,9 +82,12 @@ func (d *DigestHeaders) ApplyAuth(req *http.Request) {
 }
 
 // Auth authenticates against a given URI
-func (d *DigestHeaders) Auth(username string, password string, uri string) (*DigestHeaders, error) {
+func (d *DigestHeaders) Auth(username string, password string, uri string, insecure bool) (*DigestHeaders, error) {
+	tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: insecure},
+	}
 
-	client := &http.Client{}
+	client := &http.Client{Transport: tr}
 	jar := &myjar{}
 	jar.jar = make(map[string][]*http.Cookie)
 	client.Jar = jar
